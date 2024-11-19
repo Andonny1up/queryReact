@@ -11,7 +11,16 @@ function App() {
   return (
     <>
       <h2>Todos</h2>
-      <select value={userId} onChange={(e) => setUserId(Number(e.target.value))}>
+      <select 
+        value={userId} 
+        onChange={(e) => {
+          if (e.target.value !== ""){
+            setUserId(Number(e.target.value))
+          } else {
+            setUserId(undefined);
+          }
+        }}
+      >
         <option value="">Todos los usuarios</option>
         <option value="1">Usuario 1</option>
         <option value="2">Usuario 2</option>
