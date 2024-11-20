@@ -1,31 +1,38 @@
-import useTodos from "./hooks/useTodos"
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 
+type Post = {
+  id: number;
+  title: string;
+  body: string;
+  userId: number;
+}
 
 function App() {
-  const pageSize = 15;
-  const{data, error, isLoading, fetchNextPage, isFetchingNextPage} = useTodos(pageSize)
-
-  if (error) return <h2>{error.message} :(</h2>
-  if (isLoading) return <h2>Cargando...</h2>
-  const todos = data?.pages.flat() 
-  
+  const url = 'https://jsonplaceholder.typicode.com/posts?_limit=10'
+  const {data, isLoading} = useQuery({
+    queryKey:["post"],
+    queryFn: () =>
+      axios.get<Post[]>(url)
+        .then((response)=>response.data)
+  })
   return (
     <>
-      <h2>Todos</h2>
+      <h2>Post</h2>
+      <form>
+        <div>
+          <input type="text" />
+        </div>
+        <div>
+          <button>Enviar</button>
+        </div>
+      </form>
+      {isLoading && <p>Cargando...</p>}
       <ul>
-        {todos?.map((todo)=>(
-          <li key={todo.id}>{todo.title}</li>
-        ))}
+        {data?.map(post => <li key={post.id}>{post.title}</li>)}
       </ul>
-
-      <button
-        disabled={isFetchingNextPage} 
-        onClick={() => fetchNextPage()}
-      >
-        {isFetchingNextPage ? 'Cargando...':'Cargar más...'}
-      </button>
     </>
-  )
+  );
 }
 
 export default App
