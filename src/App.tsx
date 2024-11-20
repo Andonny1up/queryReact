@@ -14,20 +14,27 @@ function App() {
   const titleRef = useRef<HTMLInputElement>(null)
   const bodyRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient() 
-  const {mutate} = useMutation({
+  const {mutate, isPending, error} = useMutation({
     mutationFn: (post: Post) =>
-      axios.post<Post>("https://jsonplaceholder.typicode.com/posts",post)
+      axios
+      .post<Post>(
+        "https://jsonplaceholder.typicode.com/posts",
+        post
+      )
       .then(response => response.data),
     onSuccess: (savedPost, newPost) =>{
-      queryClient.setQueryData<Post[]>(["posts"], (post = []) =>[savedPost, ...post])
-
-      // queryClient.invalidateQueries({
-      //   queryKey: ["posts"]
-      // })
+      queryClient.setQueryData<Post[]>(
+        ["posts"],
+        (post = []) =>[savedPost, ...post]
+      );
+      if (titleRef.current?.value && bodyRef.current?.value){
+        titleRef.current.value = "";
+        bodyRef.current.value = ""
+      }
     }
   })
   const {data, isLoading} = useQuery({
-    queryKey:["post"],
+    queryKey:["posts"],
     queryFn: () =>
       axios.get<Post[]>(url)
         .then((response)=>response.data)
@@ -53,7 +60,10 @@ function App() {
           <input ref={bodyRef} type="text" placeholder="cuerpo"/>
         </div>
         <div>
-          <button>Enviar</button>
+          <button disabled={isPending}>
+            {isPending ? 'Creando': 'Enviar'}
+          </button>
+          {error && <span>{error.message}</span>}
         </div>
       </form>
       {isLoading && <p>Cargando...</p>}
