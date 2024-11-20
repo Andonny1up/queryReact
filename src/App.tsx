@@ -22,15 +22,28 @@ function App() {
         post
       )
       .then(response => response.data),
-    onSuccess: (savedPost, newPost) =>{
+    onMutate: (newPost) =>{
       queryClient.setQueryData<Post[]>(
         ["posts"],
-        (post = []) =>[savedPost, ...post]
+        (post = []) =>[newPost, ...post]
       );
       if (titleRef.current?.value && bodyRef.current?.value){
         titleRef.current.value = "";
         bodyRef.current.value = ""
       }
+    },
+    onSuccess: (savedPost, newPost) =>{
+      queryClient.setQueryData<Post[]>(
+        ["posts"],
+        (posts = []) => posts?.map((post)=> {
+          return post.id === newPost.id ? savedPost: post
+        })
+      )
+    },
+    onError: (error, newPost, ctx) =>{
+      queryClient.setQueryData<Post[]>(["posts"], (posts = []) =>{
+        return posts.filter(post => post.id !== newPost.id)
+      })
     }
   })
   const {data, isLoading} = useQuery({
