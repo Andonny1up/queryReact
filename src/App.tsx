@@ -1,49 +1,19 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useRef } from "react";
-
-type Post = {
-  id: number;
-  title: string;
-  body: string;
-  userId: number;
-}
+import { Post } from "./types";
+import useCreatePost from "./hooks/useCreatePost";
+import useDeletePost from "./hooks/useDeletePost";
 
 function App() {
   const url = 'https://jsonplaceholder.typicode.com/posts?_limit=10'
   const titleRef = useRef<HTMLInputElement>(null)
   const bodyRef = useRef<HTMLInputElement>(null)
-  const queryClient = useQueryClient() 
-  const {mutate, isPending, error} = useMutation({
-    mutationFn: (post: Post) =>
-      axios
-      .post<Post>(
-        "https://jsonplaceholder.typicode.com/aposts",
-        post
-      )
-      .then(response => response.data),
-    onMutate: (newPost) =>{
-      const oldPosts = queryClient.getQueryData<Post[]>(["posts"])
-      queryClient.setQueryData<Post[]>(
-        ["posts"],
-        (post = []) =>[newPost, ...post]
-      );
-      if (titleRef.current?.value && bodyRef.current?.value){
-        titleRef.current.value = "";
-        bodyRef.current.value = ""
-      }
-      return oldPosts
-    },
-    onSuccess: (savedPost, newPost) =>{
-      queryClient.setQueryData<Post[]>(
-        ["posts"],
-        (posts = []) => posts?.map((post)=> {
-          return post.id === newPost.id ? savedPost: post
-        })
-      )
-    },
-    onError: (error, newPost, ctx) =>{
-      queryClient.setQueryData<Post[]>(["posts"], ctx)
+  const {mutate: deleteMutate} = useDeletePost()
+  const {mutate, isPending, error} = useCreatePost(()=>{
+    if (titleRef.current?.value && bodyRef.current?.value){
+      titleRef.current.value = "";
+      bodyRef.current.value = ""
     }
   })
   const {data, isLoading} = useQuery({
@@ -81,7 +51,11 @@ function App() {
       </form>
       {isLoading && <p>Cargando...</p>}
       <ul>
-        {data?.map(post => <li key={post.id}>{post.title}</li>)}
+        {data?.map(post => (
+          <li onClick={() => deleteMutate(post)} key={post.id}>
+            {post.title}
+            </li>
+          ))}
       </ul>
     </>
   );
