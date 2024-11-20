@@ -18,11 +18,12 @@ function App() {
     mutationFn: (post: Post) =>
       axios
       .post<Post>(
-        "https://jsonplaceholder.typicode.com/posts",
+        "https://jsonplaceholder.typicode.com/aposts",
         post
       )
       .then(response => response.data),
     onMutate: (newPost) =>{
+      const oldPosts = queryClient.getQueryData<Post[]>(["posts"])
       queryClient.setQueryData<Post[]>(
         ["posts"],
         (post = []) =>[newPost, ...post]
@@ -31,6 +32,7 @@ function App() {
         titleRef.current.value = "";
         bodyRef.current.value = ""
       }
+      return oldPosts
     },
     onSuccess: (savedPost, newPost) =>{
       queryClient.setQueryData<Post[]>(
@@ -41,9 +43,7 @@ function App() {
       )
     },
     onError: (error, newPost, ctx) =>{
-      queryClient.setQueryData<Post[]>(["posts"], (posts = []) =>{
-        return posts.filter(post => post.id !== newPost.id)
-      })
+      queryClient.setQueryData<Post[]>(["posts"], ctx)
     }
   })
   const {data, isLoading} = useQuery({
