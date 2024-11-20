@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { useRef } from "react";
 
 type Post = {
   id: number;
@@ -10,6 +11,21 @@ type Post = {
 
 function App() {
   const url = 'https://jsonplaceholder.typicode.com/posts?_limit=10'
+  const titleRef = useRef<HTMLInputElement>(null)
+  const bodyRef = useRef<HTMLInputElement>(null)
+  const queryClient = useQueryClient() 
+  const {mutate} = useMutation({
+    mutationFn: (post: Post) =>
+      axios.post<Post>("https://jsonplaceholder.typicode.com/posts",post)
+      .then(response => response.data),
+    onSuccess: (savedPost, newPost) =>{
+      queryClient.setQueryData<Post[]>(["posts"], (post = []) =>[savedPost, ...post])
+
+      // queryClient.invalidateQueries({
+      //   queryKey: ["posts"]
+      // })
+    }
+  })
   const {data, isLoading} = useQuery({
     queryKey:["post"],
     queryFn: () =>
@@ -19,9 +35,22 @@ function App() {
   return (
     <>
       <h2>Post</h2>
-      <form>
+      <form onSubmit={e =>{
+        e.preventDefault()
+        if (titleRef.current?.value && bodyRef.current?.value){
+          mutate({
+            id: 0,
+            body: bodyRef.current.value,
+            title: titleRef.current.value ,
+            userId: 1,
+          })
+        }
+      }}>
         <div>
-          <input type="text" />
+          <input ref={titleRef} type="text" placeholder="titulo"/>
+        </div>
+        <div>
+          <input ref={bodyRef} type="text" placeholder="cuerpo"/>
         </div>
         <div>
           <button>Enviar</button>
