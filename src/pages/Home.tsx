@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom"
 
 
 function Home() {
+  throw new Error("Error! Chanchito triste :(")
   const navigate = useNavigate()
   return <>
     <h2>HOLA MUNDO</h2>
