@@ -1,4 +1,3 @@
-import React from 'react'
 import { useLocation, useParams, useSearchParams } from 'react-router-dom'
 
 type Props = {}
