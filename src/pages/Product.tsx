@@ -1,29 +1,23 @@
-import { Link, Navigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 
 type Props = {}
 
-const useUser = () => undefined;
-
 const Product = ({}: Props) => {
-  const user = useUser();
-  if (!user){
-    return <Navigate to="/"/>
-  }
   const products = [
     {id: 1, name: "iPhone"},
     {id: 2, name: "Android"}
   ];
   return (
     <>
-        <div>Página de productos</div>
-        <Link to="/">Inicio</Link>
-        <ul>
-          {products.map(p => <li key={p.id}>
-            <Link to={`/products/${p.id}`}>
-              {p.name}
-            </Link>
-          </li>)}
-        </ul>
+      <div>Página de productos</div>
+      <Link to="/">Inicio</Link>
+      <ul>
+        {products.map(p => <li key={p.id}>
+          <Link to={`/products/${p.id}`}>
+            {p.name}
+          </Link>
+        </li>)}
+      </ul>
     </>
   )
 }
